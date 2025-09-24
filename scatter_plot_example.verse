@@ -1,4 +1,3 @@
-
 using { /Fortnite.com/Devices }
 using { /Verse.org/Simulation }
 using { /UnrealEngine.com/Temporary/SpatialMath }
@@ -7,7 +6,7 @@ using { Matrices }
 using { DSAV }
 
 
-dsav_code := class(creative_device):
+scatter_plot_example := class(creative_device):
 
     @editable AimTrainingButton : button_device = button_device{}
     @editable AimTrainingProp : creative_prop = creative_prop{}
@@ -67,4 +66,5 @@ dsav_code := class(creative_device):
                 #>
 
             else:
+
                 Print("Error: Invalid plot")
