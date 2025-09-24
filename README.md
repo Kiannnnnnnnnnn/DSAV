@@ -1,2 +1,35 @@
 # DSAV
-Project DSAV provides tools for UEFN game developers for analyzing data structures in Verse using descriptive statistics, visualization tools and simulated distributions. It can be used to analyze player behavior in a game, which is unaccessable using only Python.
+Project DSAV (Data Science & Analytics for Verse) provides a large amount of tools for UEFN developers to analyze data structures in Verse using descriptive statistics, visualization tools and simulated distributions. It can be used in programming language Verse, a similar language to Python, which unlike Python allows developers to analyze events and player behavior within a game session.
+
+The DSAV module allows developers to:
+ - Gather insights about player experience
+ - Make data-driven decisions for user generated content
+ - Stimulate player engagement
+ - Maximize playtime and retention, resulting in more revenue for creators
+
+This is version 1 of the code. In this version, developers can:
+ - Collect descriptive statistics of data structures, being:
+     - Mean
+     - Variance & standard deviation (sample & population)
+     - Covariance & covariance matrix
+     - Correlation coefficient & coefficient of determination (R²)
+ - Perform Ordinary Least Squares, to:
+     - Perform Linear Regression
+     - Retrieve coefficient estimates
+     - Draw scatter plots in the output log window
+     - Retrieve the:
+          - Mean Squared Error
+          - Root Mean Squared Error
+          - Mean Absolute Error
+          - Normalized Mean Squared Error
+ - Draw samples from simulated distributions, being the:
+     - Normal (Gaussian) distribution, approximated using the Box-Muller algorithm
+     - Lognormal distribution
+
+ A step-by-step guide on the usage of this module is as follows:
+  1) Open a UEFN project
+  2) Create a new Verse file and name it "matrices.verse"
+  3) Paste the code from the following snippet into the file: https://dev.epicgames.com/community/snippets/bO9r/fortnite-matrices
+  4) Create another Verse file and name it "dsav.verse"
+  5) Paste the code in this repository on the file
+  6) Navigate back to the UEFN project window and press "Build Verse Code" under the Verse tab at the top.
