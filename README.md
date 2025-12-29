@@ -1,5 +1,5 @@
 # DSAV
-Project DSAV (Data Science & Analytics for Verse) provides a large amount of tools for UEFN developers to analyze data structures in Verse using descriptive statistics, visualization tools and simulated distributions. It can be used in programming language Verse, a similar language to Python, which unlike Python allows developers to analyze events and player behavior within a game session.
+Project DSAV (Data Science & Analytics for Verse) provides machine learning tools for UEFN game-developers to analyze data structures in Verse (a new, integrated Python-like program) using descriptive statistics, visualization tools and simulated distributions. This allows developers to analyze events and player behavior within game sessions, or collect and export data smoothly into other coding systems.
 
 The DSAV module allows developers to:
  - Gather insights about player experience
