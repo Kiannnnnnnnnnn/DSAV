@@ -1,8 +1,12 @@
-# DSAV
+# Data Science & Analytics for Verse (DSAV)
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/3370c076-22d0-433f-b223-2e8a52efa191" />
 
-Project DSAV (Data Science & Analytics for Verse) provides machine learning tools for UEFN game-developers to analyze data structures in Verse (a new, integrated Python-like program) using descriptive statistics, visualization tools and simulated distributions. This allows developers to analyze events and player behavior within game sessions, or collect and export data smoothly into other coding systems.
+## About:
+
+Project DSAV provides machine learning tools for [UEFN](https://en.wikipedia.org/wiki/Unreal_Editor_for_Fortnite) game-developers to analyze data structures in [Verse](https://dev.epicgames.com/documentation/en-us/fortnite/verse-language-reference) (a new, integrated Python-like program) using descriptive statistics, visualization tools and simulated distributions. This allows developers to analyze events and player behavior within game sessions, or collect and export data smoothly into other desired programming software.
+
+## Tools and Purpose:
 
 The DSAV module allows developers to:
  - Gather insights about player experience
@@ -29,10 +33,12 @@ This is version 1 of the code. In this version, developers can:
      - Normal (Gaussian) distribution, approximated using the Box-Muller algorithm
      - Lognormal distribution
 
+## How To Use:
+
  A step-by-step guide on the usage of this module is as follows:
   1) Open a UEFN project
   2) Create a new Verse file and name it "matrices.verse"
   3) Paste the code from the following snippet into the file: https://dev.epicgames.com/community/snippets/bO9r/fortnite-matrices
   4) Create another Verse file and name it "dsav.verse"
-  5) Paste the code in this repository on the file
+  5) Paste the code from [dsav.verse](dsav.verse) on the file
   6) Navigate back to the UEFN project window and press "Build Verse Code" under the Verse tab at the top.
