@@ -4,7 +4,7 @@
 
 ## About:
 
-Project DSAV provides machine learning tools for [UEFN](https://en.wikipedia.org/wiki/Unreal_Editor_for_Fortnite) game-developers to analyze data structures in [Verse](https://dev.epicgames.com/documentation/en-us/fortnite/verse-language-reference) (a new, integrated Python-like program) and apply machine-learning techniques in their game using descriptive statistics, visualization tools and simulated distributions. This allows developers to analyze events and player behavior within game sessions, or collect and export data smoothly into other desired programming software.
+Project DSAV provides machine learning tools for [UEFN](https://en.wikipedia.org/wiki/Unreal_Editor_for_Fortnite)/[Unreal Engine](https://en.wikipedia.org/wiki/Unreal_Engine) game-developers to analyze data structures in [Verse](https://dev.epicgames.com/documentation/en-us/fortnite/verse-language-reference) (a new, integrated Python-like program) and apply machine-learning techniques in their game using descriptive statistics, visualization tools and simulated distributions. This gives developers endless possibilities to analyze player behavior and events within actual game sessions. This project also provides tools to collect and export data smoothly into other desired programming software.
 
 ## Tools and Purpose:
 
