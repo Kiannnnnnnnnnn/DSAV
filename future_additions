@@ -1,6 +1,3 @@
-- Function that returns the standard error of an estimate
-- Function that returns the statistical significance of an estimate
 - Function that tests hypothesese on estimates
-- Data cleaning techniques
-- Logistic regression
-- PCA
+- More data cleaning techniques
+- Heatmap plotter
