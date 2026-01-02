@@ -7,7 +7,50 @@ DSAV<public> := module:
     using { /UnrealEngine.com/Temporary/SpatialMath }
     using { /Verse.org/Random }
 
-    <# DESCRIPTIVE STATISTICS; UNIVARIATE #>
+    <# DATA CLEANING #>
+
+    # Returns true if the given array contains a missing value, meaning either NaN or unset optional entries.
+    (Column:[]?float).HasNA<public>()<transacts>:logic=
+        for (Index := 0..Column.Length - 1):
+            if (Entry := Column[Index], FilledEntry := Entry?):
+                if (FilledEntry = NaN):
+                    true
+            else:
+                true
+        false
+
+    # Returns true if the given matrix contains a NaN entry.
+    (InMatrix:Matrix).HasNA<public>()<transacts>:logic=
+        for (Row := 0..InMatrix.Rows - 1):
+            for (Col := 0..InMatrix.Cols - 1):
+                if (Entry := InMatrix.Rep[Row][Col], Entry = NaN):
+                    true
+        false
+
+    # Returns the input matrix without duplicated rows (if any), maintaining the first row of any duplicates.
+    (InMatrix:Matrix).DropDuplicates<public>()<transacts>:Matrix =
+        var UniqueRows : [][]float = array{}
+
+        for (RowIndex := 0..InMatrix.Rows - 1):
+            if (CurrentRow := InMatrix.Rep[RowIndex]):
+                var Duplicate : logic = false
+                for (UniqueRow : UniqueRows):
+                    if (CurrentRow = UniqueRow):
+                        set Duplicate = true
+                if (Duplicate = false):
+                    set UniqueRows = UniqueRows + array{CurrentRow}
+
+        if (UniqueRows.Length > 0):
+            if (Result := ConstructMatrix[UniqueRows]):
+                Result
+            else:
+                InMatrix
+        else:
+            InMatrix
+
+    
+
+    <# DESCRIPTIVE STATISTICS; UNIVARIATE MOMENTS #>
 
     # Calculates the average value of an array of floats.
     (Column:[]float).Mean<public>()<decides><transacts>:float=
@@ -79,7 +122,152 @@ DSAV<public> := module:
         Sqrt(SampleVariance)
 
 
-    <# DESCRIPTIVE STATISTICS; MULTIIVARIATE #>
+
+    <# DESCRIPTIVE STATISTICS; UNIVARIATE QUANTILES #>
+
+    # Calculates the largest possible difference of floats within an array.
+    (Column:[]float).Range<public>()<decides><transacts>:float=
+        var MaxValue : float = 0.0
+        var MinValue : float = 0.0
+        for (Index := 0..Column.Length - 1):
+            if (Entry := Column[Index]):
+                if (Index = 0 or Entry > MaxValue):
+                    set MaxValue = Entry
+                if (Index = 0 or Entry < MinValue):
+                    set MinValue = Entry
+
+        MaxValue - MinValue
+
+    # Calculates the largest possible difference of floats within a column in a matrix.
+    (InMatrix:Matrix).Range<public>(Column:int)<decides><transacts>:float=
+        InRows : int = InMatrix.Rows
+        var MaxValue : float = 0.0
+        var MinValue : float = 0.0
+        for (Index := 0..InRows - 1):
+            if (Entry := InMatrix.Rep[Index][Column]):
+                if (Index = 0 or Entry > MaxValue):
+                    set MaxValue = Entry
+                if (Index = 0 or Entry < MinValue):
+                    set MinValue = Entry
+
+        MaxValue - MinValue
+
+    # The following code is a sorting algorithm developed by Epic Games staff member Sarah Rust (@summergrrrl), taken from her module SortingAlgorithms.
+    # These serve as helper functions to find quartiles of an array. 
+    # Source: https://dev.epicgames.com/community/snippets/LNY1/fortnite-merge-sort
+
+    ###
+
+    # A divide-and-conquer sorting algorithm that divides an array into two, sorts each divided array, and then merges the arrays together.
+    # This is a recursive implementation, where the function calls itself to merge sort the divided arrays.
+    # The base case (the condition to stop the recursion) is the array has only one element.
+    # This is a generic implementation using parametric types, so you can provide your own type and your own comparison function as arguments.
+    MergeSort<public>(Array:[]t, Compare(L:t, R:t)<decides><transacts>:t where t:type)<transacts>:[]t=
+        Length:int = Array.Length
+        if:
+            Length > 1 # Verify there is more than one element in the array, otherwise we've reached the base case.
+            Mid:int = Floor(Length / 2) # Get the middle index of the array.
+            Left:[]t = Array.Slice[0, Mid] # Split the array in half. This keeps elements from the beginning to Mid - 1 index.
+            Right:[]t = Array.Slice[Mid] # Split the array in half. This keeps elements from Mid index to the end of the array.
+        then:
+            # Call MergeSort on the left half of the array.
+            LeftSorted:[]t = MergeSort(Left, Compare)
+ 
+            # Call MergeSort on the right half of the array.
+            RightSorted:[]t = MergeSort(Right, Compare)
+ 
+            # Combine the two arrays and return the result.
+            Merge(LeftSorted, RightSorted, Compare)
+        else:
+ 
+            # Return the array passed in because we've reached the base case.
+            Array
+ 
+    # A helper function for MergeSort that combines the divided arrays in an order based on the Compare function.
+    Merge(Left:[]t, Right:[]t, Compare(L:t, R:t)<decides><transacts>:t where t:type)<transacts>:[]t=
+        var LeftIndex:int = 0
+        var RightIndex:int = 0
+        var MergedArray:[]t = array{}
+ 
+        # Loop through all the elements in the arrays to add them to the MergedArray variable.
+        loop:
+            if (LeftElement := Left[LeftIndex], RightElement := Right[RightIndex]):
+                # Check the element in the left half array with the element in the right half array.
+                # Uses the Compare function passed in as an argument
+                if (Compare[LeftElement, RightElement]):
+                    set MergedArray += array{LeftElement}
+                    set LeftIndex += 1
+                else:
+                    set MergedArray += array{RightElement}
+                    set RightIndex += 1
+            else:
+                # We've added all of the elements from one of the arrays at this point.
+                # Now check which array still has elements to merge in and add all remaining elements.
+                if (LeftIndex >= Left.Length):
+                    option{set MergedArray += Right.Slice[RightIndex]}
+                else:
+                    option{set MergedArray += Left.Slice[LeftIndex]}
+                # Exit out of the loop because we've finished adding all elements.
+                break
+ 
+        # Return the merged array.
+        MergedArray
+
+    ###
+
+    # Additional helper function to sort in ascending order:
+    Ascending(L:float, R:float)<decides><transacts>:float =
+        R > L
+
+    # Finds the middle-positioned float in a sorted array of floats.
+    (Column:[]float).Median<public>()<decides><transacts>:float=
+        SortedColumn : []float = MergeSort(Column, Ascending)
+        N : int = SortedColumn.Length
+        if (Mod[N, 2] = 0):
+            if (LeftMiddleEntry := SortedColumn[Floor[1.0*N / 2.0]], RightMiddleEntry := SortedColumn[Ceil[1.0*N / 2.0]]):
+                1.0*(LeftMiddleEntry + RightMiddleEntry)/2.0
+            else:
+                0.0
+        else if (MiddleEntry := SortedColumn[Int[(1.0*N + 1.0) / 2.0]]):
+            MiddleEntry
+        else:
+            0.0
+
+    # Finds the first quartile in a sorted array of floats.
+    (Column:[]float).Q1<public>()<decides><transacts>:float=
+        Column.Percentile[25.0]
+
+    # Finds the third quartile in a sorted array of floats.
+    (Column:[]float).Q3<public>()<decides><transacts>:float=
+        Column.Percentile[75.0]
+
+    # Calculates the Xth percentile of an array of floats.
+    (Column:[]float).Percentile<public>(X:float)<decides><transacts>:float=
+        SortedColumn : []float = MergeSort(Column, Ascending)
+        Fraction : float = 1.0*X / 100.0
+        N : int = SortedColumn.Length
+        PercentilePosition : int = Round[1.0*Fraction*(N-1)]
+        if (Result := SortedColumn[PercentilePosition]):
+            Result
+        else:
+            0.0
+
+    # Calculates the interquartile range of an array of floats.
+    (Column:[]float).IQR<public>()<decides><transacts>:float=
+        Column.Q3[] - Column.Q1[]
+
+    # Counts the number of outliers in an array of floats, defined as entries outside 1.5*IQR from Q1 and Q3.
+    (Column:[]float).CountOutliers<public>()<decides><transacts>:int=
+        var Count : int = 0
+        for (Index := 0..Column.Length - 1):
+            if (Entry := Column[Index]):
+                if (Entry > Column.Q3[] + 1.5*Column.IQR[] or Entry < Column.Q1[] - 1.5*Column.IQR[]):
+                    set Count += 1
+        Count
+
+
+
+    <# DESCRIPTIVE STATISTICS; MULTIIVARIATE MOMENTS #>
 
     # Calculates the sample covariance of 'x' and 'y', being arrays of floats. Fails if their number of entries are different.
     Cov<public>(x:[]float, y:[]float)<decides><transacts>:?float =
@@ -159,12 +347,11 @@ DSAV<public> := module:
                 set Result = Pow(Result, 2.0)
                 option{Result}
 
-
     <# REGRESSION #>
 
     # Performs Ordinary Least Squares to derive coefficient estimates for 'X', with option to add the intercept term, such that 'y' is linearly explained by 'X'. Fails if either:
     #  * X and y have an unequal number of rows
-    #  * XtX is invertible
+    #  * XtX is not invertible
     OLSEstimates<public>(X:Matrix, y:[]float, ?Intercept : logic = false)<decides><transacts>:[]float =
         block:
             var XResult : Matrix = Matrix{}
@@ -188,6 +375,115 @@ DSAV<public> := module:
             MaybeTheResult : ?[]float = OneDMatrixAsVector[BetaHat]
             Result : []float = MaybeTheResult?
             Result
+
+    # Performs OLSEstimates and additionally provides corresponding standard errors for 'X', with option to add the intercept term. Fails if either:
+    #  * X and y have an unequal number of rows
+    #  * XtX is not invertible
+    OLSEstimates2<public>(X:Matrix, y:[]float, ?Intercept : logic = false)<decides><transacts>:[]tuple(float, float) =
+        var XResult : Matrix = Matrix{}
+            if (Intercept = true):
+                XWithOnesRep : [][]float = for (Row := 0..X.Rows - 1):
+                    for (Col := 0..X.Cols):
+                        if (Col = 0):
+                            1.0
+                        else:
+                            X.Rep[Row][Col-1]
+                XWithOnes : Matrix = ConstructMatrix[XWithOnesRep]
+                set XResult = XWithOnes
+            else:
+                set XResult = X
+        Xt :Matrix = XResult.Transpose[]
+        XtX :Matrix = Xt*XResult
+        XtXinv : Matrix = XtX.Inverse[]
+
+        Betas : []float = OLSEstimates[X, y, ?Intercept := Intercept]
+        MSE : float = MeanSquaredError[XResult, y, Betas]
+        
+        var Result : []tuple(float, float) = for (BetaPos := 0..Betas.Length - 1):
+            SE : float = Sqrt(MSE * XtXinv.Rep[BetaPos][BetaPos])
+            (Betas[BetaPos], SE)
+
+        Result
+
+    # Calculates the t-statistic for the (coefficient, standard error)-tuple in 'CSE'.
+    (CSE:tuple(float, float)).Tstat<public>()<decides><transacts>:float=
+        CSE(0) / CSE(1)
+
+    # Calculates the t-statistics for (coefficient, standard error)-tuples in 'CSE'.
+    (CSE:[]tuple(float, float)).Tstat<public>()<decides><transacts>:[]float=
+        Result : []float = for (Index := 0..CSE.Length - 1):
+            Beta : float = CSE[Index](0)
+            SE : float = CSE[Index](1)
+            Tstat : float = Beta / SE
+            Tstat
+        Result
+
+    # Calculates whether the coefficient in 'CSE' is significantly different from 0, at a 5% significance level.
+    (CSE:tuple(float, float)).IsSignif<public>()<decides><transacts>:logic=
+        if (CSE.Tstat[] > 1.96 or CSE.Tstat[] < -1.96):
+            true
+        else:
+            false
+
+    # Calculates whether the coefficients in 'CSE' are significantly different from 0, at a 5% significance level.
+    (CSE:[]tuple(float, float)).IsSignif<public>()<decides><transacts>:logic=
+        var Result : logic = true
+        for (Index := 0..CSE.Length - 1):
+            if (CSE[Index].IsSignif[] = false):
+                set Result = false
+        Result
+
+    # Performs a Logistic Regression using gradient descent to derive coefficient estimates for 'X', with option to add the intercept term, such that the log-odds of 'y' being 1 
+    # is linearly explained by 'X'. Fails if:
+    #  * X and y have an unequal number of rows
+    #  * y contains values other than 0.0 or 1.0
+    LogRegEstimates<public>(X:Matrix, y:[]float, ?Intercept : logic = false)<decides><transacts>:[]float =
+        block:
+            var XResult : Matrix = Matrix{}
+            if (Intercept = true):
+                XWithOnesRep : [][]float = for (Row := 0..X.Rows - 1):
+                    for (Col := 0..X.Cols):
+                        if (Col = 0):
+                            1.0
+                        else:
+                            X.Rep[Row][Col-1]
+                XWithOnes : Matrix = ConstructMatrix[XWithOnesRep]
+                set XResult = XWithOnes
+            else:
+                set XResult = X
+
+            var Beta : []float = for (Index := 0..XResult.Cols - 1):
+                0.0
+
+            var NonBinary : logic = false
+            for (Outcome := 0..y.Length - 1):
+                if (y[Outcome] <> 0.0 and y[Outcome] <> 1.0):
+                    set NonBinary = true
+
+            if (NonBinary = true):
+                Print("Error: y contains values other than 0.0 or 1.0.")
+            else:
+                var LearningRate : float = 0.01
+                var MaxIterations : int = 10000
+
+                for (Iteration := 0..MaxIterations - 1):
+                    Predictions : []float = for (Row := 0..XResult.Rows - 1):
+                        var LinearCombination : float = 0.0
+                        for (Col := 0..XResult.Cols - 1):
+                            set LinearCombination += XResult.Rep[Row][Col] * Beta[Col]
+                        1.0 / (1.0 + Exp(-LinearCombination))
+
+                    Errors : []float = for (Index := 0..y.Length - 1):
+                        Predictions[Index] - y[Index]
+
+                    for (Col := 0..XResult.Cols - 1):
+                        var Gradient : float = 0.0
+                        for (Row := 0..XResult.Rows - 1):
+                            set Gradient += Errors[Row] * XResult.Rep[Row][Col]
+                        set Gradient /= 1.0*XResult.Rows
+                        set Beta[Col] -= LearningRate * Gradient
+
+            Beta
 
     # Prints an ASCII scatter plot graph in the output log, given data points (x[i], y[i]) and optional titles. Provides the option to return the line equation of best fit.
     ScatterPlot<public>(x:[]float, y:[]float, ?XAxisLabel : string = "", ?YAxisLabel : string = "", ?Title : string = "", ?Fit : logic = false)<decides><transacts>:void =
@@ -425,17 +721,29 @@ DSAV<public> := module:
             Y :float = RandNormPDF(Mu, Sigma)
             Exp(Y)
 
+    <# DATA EXPORT #>
+
+    # Converts the input matrix into CSV text format
+    PrintCSV<public>(X:Matrix)<transacts>:void=
+        var ReturnString : string = ""
+        for (Row := 0..X.Rows):
+            for (Col := 0..X.Cols):
+                if (set ReturnString += "{X.Rep[Row][Col]}") {}
+                if (Col < X.Cols):
+                    set ReturnString += ","
+            set ReturnString += "\n"
+        Print(ReturnString)
 
     <# HELPER FUNCTIONS #>
 
-    # Converts an array of floats 'Input' to a 1-dimentional matrix
+    # Converts an array of floats 'Input' to a 1-dimensional matrix
     VectorAsMatrix<public>(Input : []float)<decides><transacts>: Matrix =
         block:
             Result : [][]float = for (Element : Input):
                 array{Element}
             ConstructMatrix[Result]
 
-    # Converts a 1-dimentional matrix 'Input' to an array of floats. Fails if the matrix has more than one column.
+    # Converts a 1-dimensional matrix 'Input' to an array of floats. Fails if the matrix has more than one column.
     OneDMatrixAsVector<public>(Input : Matrix)<decides><transacts>: ?[]float =
         block:
             InRows : int = Input.Rows
@@ -454,12 +762,12 @@ DSAV<public> := module:
         for (MaybeAFloat : OptArray, Value := MaybeAFloat?):
             Value
 
-    # Returns a submatrix with reduced rows ('Dimention' = 0) or reduced columns ('Dimention' = 1), selecting the rows/columns specified in 'Scope'.
-    (InMatrix:Matrix).Submatrix<public>(Dimention: int, Scope:[]int)<decides><transacts>:Matrix=
+    # Returns a submatrix with reduced rows ('Dimension' = 0) or reduced columns ('Dimension' = 1), selecting the indices of rows/columns specified in 'Scope'.
+    (InMatrix:Matrix).Submatrix<public>(Dimension: int, Scope:[]int)<decides><transacts>:Matrix=
         block:
             var NRows : int = 0
             var NCols : int = 0
-            if (Dimention = 0):
+            if (Dimension = 0):
                 set NRows = Scope.Length
                 set NCols = InMatrix.Cols
                 Result : [][]float = for (Index : Scope):
@@ -518,5 +826,4 @@ DSAV<public> := module:
         45  => "- ",
         39  => "' ",
         0   => "  "
-
     }
