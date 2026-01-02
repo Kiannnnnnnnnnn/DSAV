@@ -14,33 +14,25 @@ The DSAV module allows developers to:
  - Stimulate player engagement
  - Maximize playtime and retention, resulting in more revenue for creators
 
-This is version 1 of the code. In this version, developers can:
- - Collect descriptive statistics of data structures, being:
-     - Mean
-     - Variance & standard deviation (sample & population)
-     - Covariance & covariance matrix
-     - Correlation coefficient & coefficient of determination (R²)
- - Perform Ordinary Least Squares, to:
-     - Perform Linear Regression
-     - Retrieve coefficient estimates
-     - Draw scatter plots in the output log window
-     - Retrieve the:
-          - Mean Squared Error
-          - Root Mean Squared Error
-          - Mean Absolute Error
-          - Normalized Mean Squared Error
+This is version 2 of the code. In this version, developers can:
+ - Collect various descriptive statistics of data structures
+ - Perform Ordinary Least Squares and logistic regression
+ - Retrieve coefficient estimates and significance
+ - Draw scatter plots in the output log window
+ - Retrieve the Mean Squared Error, and variations thereof
  - Draw samples from simulated distributions, being the:
      - Normal (Gaussian) distribution, approximated using the Box-Muller algorithm
      - Lognormal distribution
+ - Export collected data to CSV text format
 
 ## How To Use:
 
  A step-by-step guide on the usage of this module is as follows:
   1) Open a UEFN project
-  2) Create a new Verse file and name it "matrices.verse"
-  3) Paste the code from the following snippet into the file: https://dev.epicgames.com/community/snippets/bO9r/fortnite-matrices
-  4) Add the file [dsav.verse](dsav.verse) in the Verse directory
-  5) Navigate back to the UEFN project window and press "Build Verse Code" under the Verse tab at the top.
+  2) Open the Verse tab
+  3) Add the files [dsav.verse](dsav.verse) and [matrices.verse](matrices.verse) in the Verse directory
+  4) Navigate back to the UEFN project window and press "Build Verse Code" under the Verse tab at the top
+  5) Utilize the functions from dsav.verse to write your own data-manipulating code in any Verse file, finishing off by pressing "Build Verse Code". If you use @editable devices for this, drag the Verse device into your workspace and link these devices.
 
 ## Inquiries:
 
