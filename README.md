@@ -9,17 +9,20 @@ Project DSAV provides machine learning tools for [UEFN](https://en.wikipedia.org
 ## Tools and Purpose:
 
 The DSAV module allows developers to:
+
  - Gather insights about player experience
  - Make data-driven decisions for user generated content
  - Stimulate player engagement
  - Maximize playtime and retention, resulting in more revenue for creators
 
 This is version 2 of the code. In this version, developers can:
+
  - Collect various descriptive statistics of data structures
  - Perform Ordinary Least Squares and logistic regression
  - Retrieve coefficient estimates and significance
  - Draw scatter plots in the output log window
  - Retrieve the Mean Squared Error, and variations thereof
+ - Clean data
  - Draw samples from simulated distributions, being the:
      - Normal (Gaussian) distribution, approximated using the Box-Muller algorithm
      - Lognormal distribution
