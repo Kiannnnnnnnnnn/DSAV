@@ -34,13 +34,25 @@ This is version 2 of the code. In this version, developers can:
   1) Open a UEFN project
   2) Open the Verse tab
   3) Add the files [dsav.verse](dsav.verse) and [matrices.verse](matrices.verse) in the Verse directory
-  4) Navigate back to the UEFN project window and press "Build Verse Code" under the Verse tab at the top
-  5) Utilize the functions from dsav.verse to write your own data-manipulating code in any Verse file, finishing off by pressing "Build Verse Code". If you use @editable devices for this, drag the Verse device into your workspace and link these devices.
+  4) Utilize the functions from dsav.verse to write your own data-manipulating code in any Verse file. Add the following packages at the top of your Verse file to do this:
+     ```
+     using { /Fortnite.com/Devices }
+     using { /Verse.org/Simulation }
+     using { /UnrealEngine.com/Temporary/SpatialMath }
+     using { /Verse.org/Random }
+     using { Matrices }
+     using { DSAV }
+     ```
+     If you use [@editable devices](https://dev.epicgames.com/documentation/en-us/fortnite/uefnonly-devices-in-fortnite) in your code, such as an [Analytics Device](https://dev.epicgames.com/documentation/en-us/fortnite/using-analytics-devices-in-fortnite-creative), drag the Verse device into your workspace and link these devices after pressing "Compile Verse". If not, only the first package will not be needed.
+  5) Each time you finalize your code, finish off by pressing "Compile Verse" in the editor for it to be readily executable.
+  6) Press "Launch Session", which may take a few minutes
+  7) Once done, press "Start Game". Your code file will now run with your game session.
 
 ## Inquiries:
 
-Please feel free to reach out to me on [LinkedIn](https://www.linkedin.com/in/kian-sadeghzadeh/) for:
+Please feel free to reach out to me on Discord (username: **._.kian**) for:
 - Questions
 - Feedback
+- Help setting this up yourself
 - Ideas to collaborate
 - Awesome work you've done using this project
