@@ -11,21 +11,23 @@ DSAV<public> := module:
 
     # Returns true if the given array contains a missing value, meaning either NaN or unset optional entries.
     (Column:[]?float).HasNA<public>()<transacts>:logic=
+        var Result : logic = false
         for (Index := 0..Column.Length - 1):
-            if (Entry := Column[Index], FilledEntry := Entry?):
+            if (FilledEntry := Column[Index]?):
                 if (FilledEntry = NaN):
-                    true
+                    set Result = true
             else:
-                true
-        false
+                set Result = true
+        Result
 
     # Returns true if the given matrix contains a NaN entry.
     (InMatrix:Matrix).HasNA<public>()<transacts>:logic=
+        var Result : logic = false
         for (Row := 0..InMatrix.Rows - 1):
             for (Col := 0..InMatrix.Cols - 1):
                 if (Entry := InMatrix.Rep[Row][Col], Entry = NaN):
-                    true
-        false
+                    set Result = true
+        Result
 
     # Returns the input matrix without duplicated rows (if any), maintaining the first row of any duplicates.
     (InMatrix:Matrix).DropDuplicates<public>()<transacts>:Matrix =
@@ -39,7 +41,6 @@ DSAV<public> := module:
                         set Duplicate = true
                 if (Duplicate = false):
                     set UniqueRows = UniqueRows + array{CurrentRow}
-
         if (UniqueRows.Length > 0):
             if (Result := ConstructMatrix[UniqueRows]):
                 Result
@@ -228,8 +229,8 @@ DSAV<public> := module:
                 1.0*(LeftMiddleEntry + RightMiddleEntry)/2.0
             else:
                 0.0
-        else if (MiddleEntry := SortedColumn[Int[(1.0*N + 1.0) / 2.0]]):
-            MiddleEntry
+        else if (MiddleEntry1 := SortedColumn[Ceil[(1.0*N + 1.0) / 2.0]], MiddleEntry2 := SortedColumn[Floor[1.0*N / 2.0]]):
+            (MiddleEntry1 + MiddleEntry2)/2.0
         else:
             0.0
 
@@ -241,16 +242,16 @@ DSAV<public> := module:
     (Column:[]float).Q3<public>()<decides><transacts>:float=
         Column.Percentile[75.0]
 
-    # Calculates the Xth percentile of an array of floats.
+    # Calculates the Xth percentile of an array of floats, using the nearest-rank method.
     (Column:[]float).Percentile<public>(X:float)<decides><transacts>:float=
         SortedColumn : []float = MergeSort(Column, Ascending)
         Fraction : float = 1.0*X / 100.0
-        N : int = SortedColumn.Length
-        PercentilePosition : int = Round[1.0*Fraction*(N-1)]
-        if (Result := SortedColumn[PercentilePosition]):
-            Result
-        else:
-            0.0
+        ExactPosition : float = Fraction * (1.0*SortedColumn.Length - 1.0)
+        FloorIdx : int = Floor[ExactPosition]
+        CeilIdx : int = Ceil[ExactPosition]
+        FloorPos : float = SortedColumn[FloorIdx]
+        CeilPos : float = SortedColumn[CeilIdx]
+        (FloorPos + CeilPos) / 2.0
 
     # Calculates the interquartile range of an array of floats.
     (Column:[]float).IQR<public>()<decides><transacts>:float=
@@ -381,17 +382,17 @@ DSAV<public> := module:
     #  * XtX is not invertible
     OLSEstimates2<public>(X:Matrix, y:[]float, ?Intercept : logic = false)<decides><transacts>:[]tuple(float, float) =
         var XResult : Matrix = Matrix{}
-            if (Intercept = true):
-                XWithOnesRep : [][]float = for (Row := 0..X.Rows - 1):
-                    for (Col := 0..X.Cols):
-                        if (Col = 0):
-                            1.0
-                        else:
-                            X.Rep[Row][Col-1]
-                XWithOnes : Matrix = ConstructMatrix[XWithOnesRep]
-                set XResult = XWithOnes
-            else:
-                set XResult = X
+        if (Intercept = true):
+            XWithOnesRep : [][]float = for (Row := 0..X.Rows - 1):
+                for (Col := 0..X.Cols):
+                    if (Col = 0):
+                        1.0
+                    else:
+                        X.Rep[Row][Col-1]
+            XWithOnes : Matrix = ConstructMatrix[XWithOnesRep]
+            set XResult = XWithOnes
+        else:
+            set XResult = X
         Xt :Matrix = XResult.Transpose[]
         XtX :Matrix = Xt*XResult
         XtXinv : Matrix = XtX.Inverse[]
@@ -409,7 +410,7 @@ DSAV<public> := module:
     (CSE:tuple(float, float)).Tstat<public>()<decides><transacts>:float=
         CSE(0) / CSE(1)
 
-    # Calculates the t-statistics for (coefficient, standard error)-tuples in 'CSE'.
+    # Calculates the t-statistics for multiple (coefficient, standard error)-tuples in 'CSE'.
     (CSE:[]tuple(float, float)).Tstat<public>()<decides><transacts>:[]float=
         Result : []float = for (Index := 0..CSE.Length - 1):
             Beta : float = CSE[Index](0)
@@ -463,8 +464,8 @@ DSAV<public> := module:
             if (NonBinary = true):
                 Print("Error: y contains values other than 0.0 or 1.0.")
             else:
-                var LearningRate : float = 0.01
-                var MaxIterations : int = 10000
+                LearningRate : float = 0.01
+                MaxIterations : int = 1000
 
                 for (Iteration := 0..MaxIterations - 1):
                     Predictions : []float = for (Row := 0..XResult.Rows - 1):
@@ -723,13 +724,13 @@ DSAV<public> := module:
 
     <# DATA EXPORT #>
 
-    # Converts the input matrix into CSV text format
+    # Converts the input matrix into CSV text format, retrievable from the output log.
     PrintCSV<public>(X:Matrix)<transacts>:void=
-        var ReturnString : string = ""
-        for (Row := 0..X.Rows):
-            for (Col := 0..X.Cols):
+        var ReturnString : string = "\n"
+        for (Row := 0..X.Rows - 1):
+            for (Col := 0..X.Cols - 1):
                 if (set ReturnString += "{X.Rep[Row][Col]}") {}
-                if (Col < X.Cols):
+                if (Col < X.Cols - 1):
                     set ReturnString += ","
             set ReturnString += "\n"
         Print(ReturnString)
